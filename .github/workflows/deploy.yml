@@ -2,10 +2,15 @@ name: Deployment Lifecycle Automation
 
 on:
   push:
-    branches:
-      - main
-  schedule:
-    - cron: "0 9,21 * * *" # Runs at 9:00 AM and 9:00 PM GMT
+    branches: [main, dev, demo]
+  pull_request:
+    branches: [main, dev, demo]
+    types:
+      - opened
+      - ready_for_review
+      - reopened
+      - synchronize
+  merge_group:
   workflow_dispatch:
 
 jobs:
@@ -111,12 +116,16 @@ jobs:
           UNIQUE_ENV_NAME="${TIMESTAMP_SHORT}${RANDOM_SUFFIX}"    # Usually ~12-13 chars
           echo "ENVIRONMENT_NAME=${UNIQUE_ENV_NAME}" >> $GITHUB_ENV
           echo "Generated ENVIRONMENT_NAME: ${UNIQUE_ENV_NAME}"
-
-      - name: Deploy Bicep Template
-        id: deploy
+      
+      - name: Get Deployment Output and extract Values
+        id: get_output
         run: |
           set -e
-          az deployment group create \
+          echo "Fetching deployment output..."
+          # Install azd (Azure Developer CLI) - required by process_sample_data.sh
+          curl -fsSL https://aka.ms/install-azd.sh | bash
+
+          DEPLOY_OUTPUT=$(az deployment group create \
             --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
             --template-file infra/main.json \
             --parameters \
@@ -133,7 +142,14 @@ jobs:
                 maxReplicaContainerApi="1" \
                 minReplicaContainerWeb="1" \
                 maxReplicaContainerWeb="1" \
-                useLocalBuild="false"
+                useLocalBuild="false" \
+            --query "properties.outputs" -o json)
+
+          echo "Deployment output: $DEPLOY_OUTPUT"
+          if [[ -z "$DEPLOY_OUTPUT" ]]; then
+            echo "Error: Deployment output is empty. Please check the deployment logs."
+            exit 1
+          fi
 
       - name: Delete Bicep Deployment
         if: always()  # This ensures that resource group deletion happens regardless of success or failure
