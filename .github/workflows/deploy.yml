@@ -167,6 +167,8 @@ jobs:
       - name: Register schemas
         id: register
         run: |
+          echo "Current directory: $(pwd)"
+          ls -l src
           echo "Registering schemas..."
           cd src/ContentProcessorApi/samples/schemas
           ./register_schema.sh ${{ env.CONTAINER_API_APPURL }}/schemavault/ schema_info_sh.json
