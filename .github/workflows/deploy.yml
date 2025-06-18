@@ -166,8 +166,8 @@ jobs:
       
       - name: Make scripts executable
         run: |
-          chmod +x infra/scripts/register_schema.sh
-          chmod +x infra/scripts/upload_files.sh
+          chmod +x src/ContentProcessorApi/samples/schemas/register_schema.sh
+          chmod +x src/ContentProcessorApi/samples/schemas/upload_files.sh
 
       - name: Register schemas
         id: register
