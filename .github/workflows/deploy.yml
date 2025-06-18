@@ -16,6 +16,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    outputs:
+      invoice_schema_id: ${{ steps.register.outputs.invoice_schema_id }}
+      propertydamageclaimform_schema_id: ${{ steps.register.outputs.propertydamageclaimform_schema_id }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -150,6 +154,34 @@ jobs:
             echo "Error: Deployment output is empty. Please check the deployment logs."
             exit 1
           fi
+
+          export CONTAINER_API_APPURL=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_FQDN.value')
+          echo "CONTAINER_API_APPURL=$CONTAINER_API_APPURL" >> $GITHUB_ENV
+          export CONTAINER_API_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_NAME.value')
+          echo "CONTAINER_API_APPNAME=$CONTAINER_API_APPNAME" >> $GITHUB_ENV
+          export CONTAINER_WEB_APPURL=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_FQDN.value')
+          echo "CONTAINER_WEB_APPURL=$CONTAINER_WEB_APPURL" >> $GITHUB_ENV
+          export CONTAINER_WEB_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_NAME.value')
+          echo "CONTAINER_WEB_APPNAME=$CONTAINER_WEB_APPNAME" >> $GITHUB_ENV
+      
+      - name: Make scripts executable
+        run: |
+          chmod +x infra/scripts/register_schema.sh
+          chmod +x infra/scripts/upload_files.sh
+
+      - name: Register schemas
+        id: register
+        run: |
+          echo "Registering schemas..."
+          cd src/ContentProcessorApi/samples/schemas
+          ./register_schema.sh ${{ env.CONTAINER_API_APPURL }}/schemavault/ schema_info_sh.json
+
+      - name: Upload sample invoice and claim data
+        run: |
+          echo "Uploading sample data..."
+          cd src/ContentProcessorApi/samples
+          ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./invoices '${{ steps.register.outputs.invoice_schema_id }}'
+          ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./propertyclaims '${{ steps.register.outputs.propertydamageclaimform_schema_id }}'
 
       - name: Delete Bicep Deployment
         if: always()  # This ensures that resource group deletion happens regardless of success or failure
