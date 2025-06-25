@@ -168,15 +168,14 @@ jobs:
         id: register
         run: |
           echo "Registering schemas..."
-          cd ContentProcessorAPI/samples/schemas
-          ./register_schema.sh ${{ env.CONTAINER_API_APPURL }}/schemavault/ schema_info_sh.json
+          ./src/ContentProcessorAPI/samples/schemas/register_schema.sh ${{ env.CONTAINER_API_APPURL }}/schemavault/ schema_info_sh.json
 
       - name: Upload sample invoice and claim data
         run: |
           echo "Uploading sample data..."
-          cd ContentProcessorAPI/samples
-          ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./invoices '${{ steps.register.outputs.invoice_schema_id }}'
-          ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./propertyclaims '${{ steps.register.outputs.propertydamageclaimform_schema_id }}'
+          
+          ./src/ContentProcessorAPI/samples/upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./invoices '${{ steps.register.outputs.invoice_schema_id }}'
+          ./src/ContentProcessorAPI/samples/upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./propertyclaims '${{ steps.register.outputs.propertydamageclaimform_schema_id }}'
 
       - name: Delete Bicep Deployment
         if: always()  # This ensures that resource group deletion happens regardless of success or failure
