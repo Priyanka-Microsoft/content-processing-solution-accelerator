@@ -168,12 +168,13 @@ jobs:
         id: register
         run: |
           echo "Registering schemas..."
+          chmod +x ./src/ContentProcessorAPI/samples/schemas/register_schema.sh
           ./src/ContentProcessorAPI/samples/schemas/register_schema.sh ${{ env.CONTAINER_API_APPURL }}/schemavault/ schema_info_sh.json
 
       - name: Upload sample invoice and claim data
         run: |
           echo "Uploading sample data..."
-          
+          chmod +x ./src/ContentProcessorAPI/samples/upload_files.sh
           ./src/ContentProcessorAPI/samples/upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./invoices '${{ steps.register.outputs.invoice_schema_id }}'
           ./src/ContentProcessorAPI/samples/upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./propertyclaims '${{ steps.register.outputs.propertydamageclaimform_schema_id }}'
 
