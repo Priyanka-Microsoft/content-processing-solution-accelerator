@@ -166,17 +166,16 @@ jobs:
           echo "CONTAINER_WEB_APPURL=$CONTAINER_WEB_APPURL" >> $GITHUB_ENV
           export CONTAINER_WEB_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_NAME.value')
           echo "CONTAINER_WEB_APPNAME=$CONTAINER_WEB_APPNAME" >> $GITHUB_ENV
-      
-      - name: Debug structure
-        run: ls -R
 
       - name: Register schemas
         id: register
+        shell: pwsh
         run: |
-          echo "Registering schemas..."
+          Write-Host "Registering schemas..."
+          az containerapp restart --name $env:CONTAINER_API_APPNAME --resource-group $env:RESOURCE_GROUP_NAME --no-wait
+          Start-Sleep -Seconds 30
           cd src/ContentProcessorAPI/samples/schemas
-          chmod +x ./register_schema.sh
-          ./register_schema.sh ${{ env.CONTAINER_API_APPURL }}/schemavault/ schema_info_sh.json
+          ./register_schema.ps1 -Endpoint "$env:CONTAINER_API_APPURL/schemavault/" -SchemaFile "schema_info_sh.json"
 
       - name: Upload sample invoice and claim data
         run: |
