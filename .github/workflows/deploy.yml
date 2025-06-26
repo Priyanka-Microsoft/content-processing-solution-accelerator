@@ -172,7 +172,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Registering schemas..."
-          az containerapp restart --name $env:CONTAINER_API_APPNAME --resource-group $env:RESOURCE_GROUP_NAME --no-wait
+          az containerapp start --name $env:CONTAINER_API_APPNAME --resource-group $env:RESOURCE_GROUP_NAME --no-wait
           Start-Sleep -Seconds 30
           cd src/ContentProcessorAPI/samples/schemas
           ./register_schema.ps1 -Endpoint "$env:CONTAINER_API_APPURL/schemavault/" -SchemaFile "schema_info_sh.json"
