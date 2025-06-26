@@ -15,6 +15,12 @@ on:
       CP_WEB_URL:
         required: true
         type: string
+      CP_RG:
+        required: true
+        type: string
+      CP_CONTAINERAPP_PREFIX:
+        required: true
+        type: string
 
 env:
     url: ${{ inputs.CP_WEB_URL }}
@@ -44,9 +50,9 @@ jobs:
         with:
           azcliversion: 'latest'
           inlineScript: |
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.CP_RG }}/providers/Microsoft.App/containerApps/${{ vars.CP_CONTAINERAPP_PREFIX }}-app/start?api-version=2025-01-01"
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.CP_RG }}/providers/Microsoft.App/containerApps/${{ vars.CP_CONTAINERAPP_PREFIX }}-api/start?api-version=2025-01-01"
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.CP_RG }}/providers/Microsoft.App/containerApps/${{ vars.CP_CONTAINERAPP_PREFIX }}-web/start?api-version=2025-01-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.CP_RG }}/providers/Microsoft.App/containerApps/${{ inputs.CP_CONTAINERAPP_PREFIX }}-app/start?api-version=2025-01-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.CP_RG }}/providers/Microsoft.App/containerApps/${{ inputs.CP_CONTAINERAPP_PREFIX }}-api/start?api-version=2025-01-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.CP_RG }}/providers/Microsoft.App/containerApps/${{ inputs.CP_CONTAINERAPP_PREFIX }}-web/start?api-version=2025-01-01"
 
       - name: Install dependencies
         run: |
