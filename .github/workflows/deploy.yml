@@ -21,6 +21,7 @@ jobs:
       propertydamageclaimform_schema_id: ${{ steps.register.outputs.propertydamageclaimform_schema_id }}
       RESOURCE_GROUP_NAME: ${{ steps.check_create_rg.outputs.RESOURCE_GROUP_NAME }}
       WEBAPP_URL: ${{ steps.get_output.outputs.WEBAPP_URL }}
+      DEPLOYMENT_SUCCESS: ${{ steps.deployment_status.outputs.SUCCESS }}
 
     steps:
       - name: Checkout Code
