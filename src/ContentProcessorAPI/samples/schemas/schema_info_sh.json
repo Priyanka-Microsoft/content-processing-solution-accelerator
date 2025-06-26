@@ -1,11 +1,11 @@
 [
     {
-        "File": "./src/ContentProcessorAPI/samples/schemas/invoice.py",
+        "File": "./invoice.py",
         "ClassName": "Invoice",
         "Description": "Invoice"
     },
     {
-        "File": "./src/ContentProcessorAPI/samples/schemas/propertyclaim.py",
+        "File": "./propertyclaim.py",
         "ClassName": "PropertyLossDamageClaimForm",
         "Description": "Property Loss Damage Claim Form"
     }
