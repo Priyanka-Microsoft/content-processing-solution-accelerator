@@ -484,6 +484,31 @@ jobs:
           done
 
           echo "Resource purging completed successfully"
+      
+      - name: Purge Container Apps Environment and Cosmos DB
+        if: always()
+        run: |
+          set -e
+
+          # Cleanup Container Apps Environment (CAE)
+          echo "Checking for Container Apps Environments..."
+          cae_list=$(az containerapp env list --resource-group "${{ env.RESOURCE_GROUP_NAME }}" --query "[].name" -o tsv)
+          for cae_name in $cae_list; do
+            echo "Deleting Container Apps Environment: $cae_name"
+            az containerapp env delete --name "$cae_name" --resource-group "${{ env.RESOURCE_GROUP_NAME }}" --yes --no-wait || \
+              echo "Failed to delete CAE: $cae_name"
+          done
+
+          # Cleanup Cosmos DB accounts
+          echo "Checking for Cosmos DB accounts..."
+          cosmos_list=$(az cosmosdb list --resource-group "${{ env.RESOURCE_GROUP_NAME }}" --query "[].name" -o tsv)
+          for cosmos_name in $cosmos_list; do
+            echo "Deleting Cosmos DB account: $cosmos_name"
+            az cosmosdb delete --name "$cosmos_name" --resource-group "${{ env.RESOURCE_GROUP_NAME }}" --yes --no-wait || \
+              echo "Failed to delete Cosmos DB: $cosmos_name"
+          done
+
+          echo "Custom resource deletions attempted for CAE and Cosmos DB."
 
       - name: Logout
         if: always()
