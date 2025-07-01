@@ -24,7 +24,10 @@ on:
 
 env:
     url: ${{ inputs.CP_WEB_URL }}
+    CP_RG: ${{ inputs.CP_RG }}
+    CP_CONTAINERAPP_PREFIX: ${{ inputs.CP_CONTAINERAPP_PREFIX }}
     accelerator_name: "Content Processing"
+
 
 jobs:
   test:
@@ -50,9 +53,9 @@ jobs:
         with:
           azcliversion: 'latest'
           inlineScript: |
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.CP_RG }}/providers/Microsoft.App/containerApps/${{ inputs.CP_CONTAINERAPP_PREFIX }}-app/start?api-version=2025-04-01"
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.CP_RG }}/providers/Microsoft.App/containerApps/${{ inputs.CP_CONTAINERAPP_PREFIX }}-api/start?api-version=2025-04-01"
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ inputs.CP_RG }}/providers/Microsoft.App/containerApps/${{ inputs.CP_CONTAINERAPP_PREFIX }}-web/start?api-version=2025-04-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.CP_RG }}/providers/Microsoft.App/containerApps/${{ env.CP_CONTAINERAPP_PREFIX }}-app/start?api-version=2025-04-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.CP_RG }}/providers/Microsoft.App/containerApps/${{ env.CP_CONTAINERAPP_PREFIX }}-api/start?api-version=2025-04-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.CP_RG }}/providers/Microsoft.App/containerApps/${{ env.CP_CONTAINERAPP_PREFIX }}-web/start?api-version=2025-04-01"
 
       - name: Install dependencies
         run: |
