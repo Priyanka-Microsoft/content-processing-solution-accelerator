@@ -21,7 +21,11 @@ jobs:
       propertydamageclaimform_schema_id: ${{ steps.register.outputs.propertylossdamageclaimform_schema_id }}
       RESOURCE_GROUP_NAME: ${{ steps.check_create_rg.outputs.RESOURCE_GROUP_NAME }}
       WEBAPP_URL: ${{ steps.get_output.outputs.WEBAPP_URL }}
-      DEPLOYMENT_SUCCESS: ${{ steps.deployment_status.outputs.SUCCESS }}
+      DEPLOYMENT_SUCCESS: ${{ steps.deployment_status.outputs.DEPLOYMENT_SUCCESS }}
+      AI_SERVICES_NAME: ${{ steps.get_ai_services_name.outputs.AI_SERVICES_NAME }}
+      KEYVAULTS: ${{ steps.list_keyvaults.outputs.KEYVAULTS }}
+      AZURE_LOCATION: ${{ steps.set_region.outputs.AZURE_LOCATION }}
+      ENVIRONMENT_NAME: ${{ steps.generate_environment_name.outputs.ENVIRONMENT_NAME }}
 
     steps:
       - name: Checkout Code
@@ -79,9 +83,11 @@ jobs:
         run: az bicep install
 
       - name: Set Deployment Region
+        id: set_region
         run: |
           echo "Selected Region: $VALID_REGION"
           echo "AZURE_LOCATION=$VALID_REGION" >> $GITHUB_ENV
+          echo "AZURE_LOCATION=$VALID_REGION" >> $GITHUB_OUTPUT
 
       - name: Generate Resource Group Name
         id: generate_rg_name
@@ -207,6 +213,69 @@ jobs:
             --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
             --set-env-vars AUTH_ENABLED=false
 
+      - name: Get AI Services name and store in variable
+        if: always() && steps.check_create_rg.outcome == 'success'
+        id: get_ai_services_name
+        run: |
+          set -e
+          echo "Getting AI Services name..."
+          # Get the AI Services name
+          ai_services_name=$(az cognitiveservices account list -g ${{ env.RESOURCE_GROUP_NAME }} --query "[0].name" -o tsv)
+          if [ -z "$ai_services_name" ]; then
+            echo "No AI Services resource found in the resource group."
+            echo "AI_SERVICES_NAME=" >> $GITHUB_OUTPUT
+          else
+            echo "AI_SERVICES_NAME=${ai_services_name}" >> $GITHUB_OUTPUT
+            echo "Found AI Services resource: $ai_services_name"
+          fi
+
+      - name: List KeyVaults and Store in Array
+        if: always() && steps.check_create_rg.outcome == 'success'
+        id: list_keyvaults
+        run: |
+          set -e
+          echo "Listing all KeyVaults in the resource group ${{ env.RESOURCE_GROUP_NAME }}..."
+          
+          # Get the list of KeyVaults in the specified resource group
+          keyvaults=$(az resource list --resource-group ${{ env.RESOURCE_GROUP_NAME }} --query "[?type=='Microsoft.KeyVault/vaults'].name" -o tsv)
+
+          if [ -z "$keyvaults" ]; then
+            echo "No KeyVaults found in resource group ${{ env.RESOURCE_GROUP_NAME }}."
+            echo "KEYVAULTS=[]" >> $GITHUB_OUTPUT  # If no KeyVaults found, set an empty array
+          else
+            echo "KeyVaults found: $keyvaults"
+
+            # Format the list into an array with proper formatting (no trailing comma)
+            keyvault_array="["
+            first=true
+            for kv in $keyvaults; do
+              if [ "$first" = true ]; then
+                keyvault_array="$keyvault_array\"$kv\""
+                first=false
+              else
+                keyvault_array="$keyvault_array,\"$kv\""
+              fi
+            done
+            keyvault_array="$keyvault_array]"
+
+            # Output the formatted array and save it to the job output
+            echo "KEYVAULTS=$keyvault_array" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Set Deployment Status
+        id: deployment_status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "SUCCESS=true" >> $GITHUB_OUTPUT
+          else
+            echo "SUCCESS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Logout
+        if: always()
+        run: az logout
+
   e2e-test:
     needs: deploy
     if: needs.deploy.outputs.DEPLOYMENT_SUCCESS == 'true'
@@ -226,7 +295,7 @@ jobs:
       AI_SERVICES_NAME: ${{ needs.deploy.outputs.AI_SERVICES_NAME }}
       KEYVAULTS: ${{ needs.deploy.outputs.KEYVAULTS }}
       AZURE_LOCATION: ${{ needs.deploy.outputs.AZURE_LOCATION }}
-      SOLUTION_PREFIX: ${{ needs.deploy.outputs.SOLUTION_PREFIX }}
+      ENVIRONMENT_NAME: ${{ needs.deploy.outputs.ENVIRONMENT_NAME }}
     steps:
       - name: Setup Azure CLI
         run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -403,16 +472,6 @@ jobs:
           done
 
           echo "Resource purging completed successfully"
-      
-      - name: Set Deployment Status
-        id: deployment_status
-        if: always()
-        run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "SUCCESS=true" >> $GITHUB_OUTPUT
-          else
-            echo "SUCCESS=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Logout
         if: always()
