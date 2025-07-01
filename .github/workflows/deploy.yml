@@ -129,43 +129,50 @@ jobs:
         run: |
           set -e
           echo "Fetching deployment output..."
-          # Install azd (Azure Developer CLI) - required by process_sample_data.sh
+
+          # Install azd (Azure Developer CLI)
           curl -fsSL https://aka.ms/install-azd.sh | bash
 
-          DEPLOY_OUTPUT=$(az deployment group create \
+          echo "Running az deployment group create..."
+          if ! DEPLOY_OUTPUT=$(az deployment group create \
             --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
             --template-file infra/main.json \
             --parameters \
-                environmentName="${{ env.ENVIRONMENT_NAME }}" \
-                secondaryLocation="EastUs2" \
-                contentUnderstandingLocation="WestUS" \
-                deploymentType="GlobalStandard" \
-                gptModelName="gpt-4o" \
-                gptModelVersion="2024-08-06" \
-                gptDeploymentCapacity="30" \
-                minReplicaContainerApp="1" \
-                maxReplicaContainerApp="1" \
-                minReplicaContainerApi="1" \
-                maxReplicaContainerApi="1" \
-                minReplicaContainerWeb="1" \
-                maxReplicaContainerWeb="1" \
-                aiDeploymentsLocation="francecentral" \
-            --query "properties.outputs" -o json)
-
-          echo "Deployment output: $DEPLOY_OUTPUT"
-          if [[ -z "$DEPLOY_OUTPUT" ]]; then
-            echo "Error: Deployment output is empty. Please check the deployment logs."
-            exit 1
+              environmentName="${{ env.ENVIRONMENT_NAME }}" \
+              secondaryLocation="EastUs2" \
+              contentUnderstandingLocation="WestUS" \
+              deploymentType="GlobalStandard" \
+              gptModelName="gpt-4o" \
+              gptModelVersion="2024-08-06" \
+              gptDeploymentCapacity="30" \
+              minReplicaContainerApp="1" \
+              maxReplicaContainerApp="1" \
+              minReplicaContainerApi="1" \
+              maxReplicaContainerApi="1" \
+              minReplicaContainerWeb="1" \
+              maxReplicaContainerWeb="1" \
+              aiDeploymentsLocation="${{ env.AZURE_LOCATION }}" \
+            --query "properties.outputs" -o json); then
+              echo "❌ Deployment failed. See logs above."
+              exit 1
           fi
 
+          echo "✅ Deployment succeeded."
+          echo "$DEPLOY_OUTPUT"
+
+          # Export variables only after successful deploy
           export CONTAINER_API_APPURL=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_FQDN.value')
           echo "CONTAINER_API_APPURL=$CONTAINER_API_APPURL" >> $GITHUB_ENV
+
           export CONTAINER_API_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_NAME.value')
           echo "CONTAINER_API_APPNAME=$CONTAINER_API_APPNAME" >> $GITHUB_ENV
+
           export CONTAINER_WEB_APPURL=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_FQDN.value')
           echo "CONTAINER_WEB_APPURL=$CONTAINER_WEB_APPURL" >> $GITHUB_ENV
+
           export CONTAINER_WEB_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_NAME.value')
           echo "CONTAINER_WEB_APPNAME=$CONTAINER_WEB_APPNAME" >> $GITHUB_ENV
+
 
       - name: Register schemas
         id: register
