@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       invoice_schema_id: ${{ steps.register.outputs.invoice_schema_id }}
-      propertydamageclaimform_schema_id: ${{ steps.register.outputs.propertydamageclaimform_schema_id }}
+      propertydamageclaimform_schema_id: ${{ steps.register.outputs.propertylossdamageclaimform_schema_id }}
       RESOURCE_GROUP_NAME: ${{ steps.check_create_rg.outputs.RESOURCE_GROUP_NAME }}
       WEBAPP_URL: ${{ steps.get_output.outputs.WEBAPP_URL }}
       DEPLOYMENT_SUCCESS: ${{ steps.deployment_status.outputs.SUCCESS }}
@@ -182,7 +182,16 @@ jobs:
           cd src/ContentProcessorAPI/samples
           chmod +x ./upload_files.sh
           ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./invoices '${{ steps.register.outputs.invoice_schema_id }}'
-          ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./propertyclaims '${{ steps.register.outputs.propertydamageclaimform_schema_id }}'
+          ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./propertyclaims '${{ steps.register.outputs.propertylossdamageclaimform_schema_id }}'
+
+          echo "Sample data uploaded successfully."
+          # Set the output variables for the next steps"
+
+          az containerapp update --name ${{ env.CONTAINER_WEB_APPNAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --set-env-vars APP_AUTH_ENABLED=false
+
+          sleep 30  # Wait for the web app to be ready
+
+          az containerapp update --name ${{ env.CONTAINER_API_APPNAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --set-env-vars APP_AUTH_ENABLED=false
 
   e2e-test:
     needs: deploy
