@@ -276,9 +276,13 @@ jobs:
         if: always()
         run: az logout
 
+      - name: Notify on Deployment Success
+        run: |
+          echo "${{ steps.deployment_status.outputs.SUCCESS }}"
+          echo "Deployment status: ${{ steps.deployment_status.outputs.SUCCESS }}"
+
   e2e-test:
     needs: deploy
-    if: needs.deploy.outputs.DEPLOYMENT_SUCCESS == 'true'
     uses: ./.github/workflows/test-automation.yml
     with:
       CP_WEB_URL: ${{ needs.deploy.outputs.WEBAPP_URL }}
