@@ -185,14 +185,19 @@ jobs:
           ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./invoices '${{ steps.register.outputs.invoice_schema_id }}'
           ./upload_files.sh https://${{ env.CONTAINER_API_APPURL }}/contentprocessor/submit ./propertyclaims '${{ steps.register.outputs.propertylossdamageclaimform_schema_id }}'
 
-          echo "Sample data uploaded successfully."
-          # Set the output variables for the next steps"
 
-          az containerapp update --name ${{ env.CONTAINER_WEB_APPNAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --set-env-vars APP_AUTH_ENABLED=false
+      - name: Disable Auth in Web App
+        run: |
+          az containerapp update --name ${{ env.CONTAINER_WEB_APPNAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
+            --set-env-vars AUTH_ENABLED=false
 
-          sleep 30  # Wait for the web app to be ready
-
-          az containerapp update --name ${{ env.CONTAINER_API_APPNAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --set-env-vars APP_AUTH_ENABLED=false
+      - name: Disable Auth in API App
+        run: |
+          sleep 30
+          az containerapp update --name ${{ env.CONTAINER_API_APPNAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
+            --set-env-vars AUTH_ENABLED=false
 
   e2e-test:
     needs: deploy
