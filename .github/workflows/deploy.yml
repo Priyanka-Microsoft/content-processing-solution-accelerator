@@ -149,7 +149,6 @@ jobs:
                 maxReplicaContainerApi="1" \
                 minReplicaContainerWeb="1" \
                 maxReplicaContainerWeb="1" \
-                useLocalBuild="false" \
             --query "properties.outputs" -o json)
 
           echo "Deployment output: $DEPLOY_OUTPUT"
