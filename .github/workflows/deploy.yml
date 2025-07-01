@@ -211,14 +211,14 @@ jobs:
         run: |
           az containerapp update --name ${{ env.CONTAINER_WEB_APPNAME }} \
             --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
-            --set-env-vars AUTH_ENABLED=false
+            --set-env-vars APP_AUTH_ENABLED=false
 
       - name: Disable Auth in API App
         run: |
           sleep 30
           az containerapp update --name ${{ env.CONTAINER_API_APPNAME }} \
             --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
-            --set-env-vars AUTH_ENABLED=false
+            --set-env-vars APP_AUTH_ENABLED=false
 
       - name: Get AI Services name and store in variable
         if: always() && steps.check_create_rg.outcome == 'success'

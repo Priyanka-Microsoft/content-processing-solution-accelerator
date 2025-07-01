@@ -176,7 +176,7 @@ jobs:
         with:
           azcliversion: 'latest'
           inlineScript: |
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.CP_RG }}/providers/Microsoft.App/containerApps/${{ vars.CP_CONTAINERAPP_PREFIX }}-app/stop?api-version=2025-01-01"
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.CP_RG }}/providers/Microsoft.App/containerApps/${{ vars.CP_CONTAINERAPP_PREFIX }}-api/stop?api-version=2025-01-01"
-            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.CP_RG }}/providers/Microsoft.App/containerApps/${{ vars.CP_CONTAINERAPP_PREFIX }}-web/stop?api-version=2025-01-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.CP_RG }}/providers/Microsoft.App/containerApps/${{ env.CP_CONTAINERAPP_PREFIX }}-app/stop?api-version=2025-01-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.CP_RG }}/providers/Microsoft.App/containerApps/${{ env.CP_CONTAINERAPP_PREFIX }}-api/stop?api-version=2025-01-01"
+            az rest -m post -u "/subscriptions/${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.CP_RG }}/providers/Microsoft.App/containerApps/${{ env.CP_CONTAINERAPP_PREFIX }}-web/stop?api-version=2025-01-01"
             az logout
