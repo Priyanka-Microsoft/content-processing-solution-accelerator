@@ -39,11 +39,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Azure CLI Login
-        uses: azure/login@v2
-        with:
-          creds: '{"clientId":"${{ secrets.AZURE_MAINTENANCE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_MAINTENANCE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_MAINTENANCE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
-
       - name: Start Container App
         id: start-container-app
         uses: azure/cli@v2

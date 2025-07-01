@@ -171,7 +171,8 @@ jobs:
         id: register
         run: |
           echo "Registering schemas..."
-          sleep 30  # Wait for the API to be ready
+          sleep 40  # Wait for the API to be ready
+
           cd src/ContentProcessorAPI/samples/schemas
           chmod +x ./register_schema.sh
           ./register_schema.sh ${{ env.CONTAINER_API_APPURL }}/schemavault/ schema_info_sh.json
