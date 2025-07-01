@@ -171,8 +171,6 @@ jobs:
         id: register
         run: |
           echo "Registering schemas..."
-          az containerapp restart --name ${{ env.CONTAINER_API_APPNAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --no-wait
-
           sleep 30  # Wait for the API to be ready
           cd src/ContentProcessorAPI/samples/schemas
           chmod +x ./register_schema.sh
